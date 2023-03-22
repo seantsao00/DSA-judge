@@ -79,7 +79,7 @@ const schema = Schema({
   compileEXFileForChecker: [String],
   compileEXLinkForChecker: [String],
   runtimeEXFile: [String]
-});
+}, {usePushEach: true});
 
 schema.plugin(autoIncrement.plugin, 'Problem');
 const Problem = mongoose.model('Problem', schema);

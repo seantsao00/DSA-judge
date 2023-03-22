@@ -31,7 +31,7 @@ const schema = Schema({
             ref: 'Submission',
         }
     ],
-});
+}, {usePushEach: true});
 
 schema.methods.getSubresults = async function() {
     const _subs = await Promise.all(this.subresults.map(x => (async () => {

@@ -28,7 +28,7 @@ const schema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Result',
     }
-});
+}, {usePushEach: true});
 
 schema.methods.populateResult = function() {
     return this.populate('_result')

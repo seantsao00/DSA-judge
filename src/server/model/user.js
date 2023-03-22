@@ -37,7 +37,7 @@ const userSchema = Schema({
     file_sha1: String
   }],
   groups: [String]
-});
+}, {usePushEach: true});
 
 userSchema.methods.hasRole = function (role) {
   const roles = this.roles;
@@ -72,6 +72,7 @@ userSchema.methods.checkQuota = async function (pid) {
     filter_res = _.filter(this.submission_limit, _.conforms({ problem_id: id => id == pid }));
   }
   res = filter_res[0];
+  console.log(String(today), String(res.last_submission), this.email);
   if (String(today).substr(0, 15) != String(res.last_submission).substr(0, 15)) {
     res.quota = 0;
     res.last_submission = today;

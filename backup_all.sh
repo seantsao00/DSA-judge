@@ -28,4 +28,4 @@ tar -zcf $root_dir/apache2.config.tar.gz $apache2_config_dir
 cp $config_file $root_dir/
 #gdrive upload -r $root_dir
 #gdrive sync upload $backup_dir 1qzkzIWOkdtf2B4CXwrqlsx3JaumFBVH6
-rclone sync $root_dir dsa2021_backup:dsajudge_backup/all_$DATE
+rclone sync $root_dir dsa2023:dsajudge/all_$DATE

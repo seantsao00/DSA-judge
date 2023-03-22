@@ -80,19 +80,19 @@ parser.addArgument(['role'], { nargs:'+', help: 'account role' });
     const mailTransporter = nodemailer.createTransport(smtpConfig);
 
     const text = (
-      `Welcome to DSA2021, this email is to inform you that your DSA Judge account has been created.
+      `Welcome to DSA2023, this email is to inform you that your DSA Judge account has been created.
   Here is your account and temporary password. (You can change your password after logging in.)
 
   - Account: ${args.email}
   - Password: ${randPass}
 
-  Head on to https://dsa-2021.csie.org/ and try it!
+  Head on to https://dsa2023.csie.org/ and try it!
   `);
 
     const mailOptions = {
-      from: '"dsa2021" <dsa_ta@csie.ntu.edu.tw >',
+      from: '"dsa2023" <dsa_ta@csie.ntu.edu.tw >',
       to: args.email,
-      subject: '[DSA2021]Your DSA Judge Account',
+      subject: '[DSA2023]Your DSA Judge Account',
       text
     };
     console.log(user);

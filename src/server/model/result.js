@@ -15,7 +15,7 @@ const schema = Schema({
         ref: 'Result',
     }],
     name: String,
-});
+}, {usePushEach: true});
 
 schema.methods.purge = function() {
     return (async () => {

@@ -47,7 +47,7 @@ const schema = Schema({
         type: Boolean,
         default: false,
     },
-});
+}, {usePushEach: true});
 
 schema.plugin(autoIncrement.plugin, 'Homework');
 const Homework = mongoose.model('Homework', schema);
