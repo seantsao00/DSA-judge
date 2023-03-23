@@ -54,7 +54,7 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
   const comp = await promisify(bcrypt.compareAsync)(req.body['current-password'], req.user.password);
   if (!comp) { return res.status(403).send('Old password is not correct'); }
   const newPassword = req.body['new-password'];
-  let changePassword = false;
+  let fieldChanged = [];
   if (newPassword.length > 0) {
     if (newPassword !== req.body['confirm-password']) { return res.status(400).send('Two password are not equal.'); }
     if (newPassword.length <= 8) { return res.status(400).send('New password too short'); }
@@ -64,15 +64,13 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
       // eslint-disable-next-line require-atomic-updates
       req.user.password = hash;
       await req.user.save();
-      changePassword = true;
+      fieldChanged.push('password');
     } catch (e) {
       return res.status(500).send('Something bad happened... New password may not be saved.');
     }
-    // res.send(`Password changed successfully.`);
   }
   let newSshKey = req.body['new-sshkey'];
   const newSshKeys = newSshKey.trim().replace(/\n/g, '').split(' ').filter(s => s !== ' ');
-  let changeSshKey = false;
   if (newSshKeys.length >= 2) {
     if (newSshKeys[0] !== 'ssh-rsa' &&
         newSshKeys[0] !== 'ssh-ed25519' &&
@@ -113,7 +111,7 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
         req.user.ssh_key = newSshKey;
         req.user.git_upload_key = magicStr;
         await req.user.save();
-        changeSshKey = true;
+        fieldChanged.push('SSH key');
       } catch (e) {
         return res.status(500).send('Something bad happened... New SSH Key may not be saved.');
       }
@@ -122,12 +120,26 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
   } else if (newSshKeys.length === 1) {
     return res.status(400).send('Unsupported SSH Key or it is too short!');
   }
-  if (changePassword && changeSshKey) {
-    res.send('Password & SSH Key changed successfully.');
-  } else if (changePassword) {
-    res.send('Password changed successfully.');
-  } else if (changeSshKey) {
-    res.send('SSH Key changed successfully.');
+  let newName = req.body['new-name'];
+  if (newName && newName.length >= 1) {
+    try {
+      if (newName != req.user.meta.name) {
+        if (newName.length > 16) {
+          return res.status(400).send('New name should be under 16 characters.');
+        } else if (!/^[A-Za-z0-9]+$/.test(newName)) {
+          return res.status(400).send('New name contains illegal characters.');
+        } else {
+          req.user.meta.name = newName;
+          await req.user.save();
+          fieldChanged.push('name');
+        }
+      }
+    } catch (e) {
+      return res.status(500).send('Something bad happened... New name may not be saved.');
+    }
+  }
+  if (fieldChanged.length >= 1) {
+    res.send('Changed successfully: ' + fieldChanged.join(', '));
   } else {
     res.send('Nothing changed.');
   }
