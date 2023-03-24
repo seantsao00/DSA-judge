@@ -8,7 +8,7 @@
           input( readonly="" type="text", :value="user ? user.meta.id : ''" )
         .field
           label Name
-          input( readonly="" type="text", :value="user ? user.meta.name : ''" )
+          input( name="new-name" type="text", :value="user ? user.meta.name : ''" )
         .field
           label Role
           input( readonly="" type="text", :value="user ? getRole(user) : 'None'" )

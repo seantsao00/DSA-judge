@@ -8,7 +8,28 @@ $.fn.form.settings.rules.emptyOrMinLength = function(value, length) {
   return value === "" || value.length >= length;
 };
 
+$.fn.form.settings.rules.maxLength = function(value, length) {
+  return value.length <= length;
+}
+
+$.fn.form.settings.rules.alphanumeric = function(value) {
+  return /^[A-Za-z0-9]*$/.test(value);
+}
+
 const formValidateObj = {
+    'new-name': {
+        identifier: 'new-name',
+        rules: [
+            {
+                type: 'alphanumeric',
+                prompt: `New name should only contain alphanumeric characters.`,
+            },
+            {
+                type: 'maxLength[16]',
+                prompt: `New name should not be longer than 16 characters.`,
+            },
+        ],
+    },
     'new-sshkey': {
         identifier: 'new-sshkey',
         rules: [
@@ -92,6 +113,7 @@ export default Vue.extend({
                         let res;
                         try {
                             res = await me.$http.post('/user/changePassword', fields);
+                            console.log(res);
                         } catch(err) {
                             if ('body' in err) toastr.error(err.body);
                             else toastr.error(err);
