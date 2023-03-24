@@ -129,7 +129,7 @@ export async function getProblemFastest(problemID) {
             .where('problem').equals(problemID)
             .where('submittedBy').equals(obj._id)
             .where('result').equals('AC')
-            .sort('runtime').populate('submittedBy', 'email meta');
+            .sort('runtime').populate('submittedBy', 'meta.name');
     })() ));
     return res;
 }
