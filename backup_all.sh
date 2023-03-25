@@ -17,15 +17,13 @@ semantic_src_dir=./semantic/src
 apache2_config_dir=/etc/apache2/sites-available/
 mkdir -p $root_dir
 mongodump --archive=$root_dir/adajudge.${DATE}.gz --gzip --db adajudge
-tar -zcf $root_dir/submissions.tar.gz $submissions_dir
-tar -zcf $root_dir/homeworks.tar.gz $homeworks_dir
-tar -zcf $root_dir/git.tar.gz $git_dir
-tar -zcf $root_dir/problems.tar.gz $problems_dir
-tar -zcf $root_dir/gitosis_admin.tar.gz $gitosis_admin
-tar -zcf $root_dir/dist.static.tar.gz $dist_static_dir
-tar -zcf $root_dir/semantic.src.tar.gz $semantic_src_dir
-tar -zcf $root_dir/apache2.config.tar.gz $apache2_config_dir
+tar -cf $root_dir/submissions.tar.zst $submissions_dir
+tar -cf $root_dir/homeworks.tar.zst $homeworks_dir
+tar -cf $root_dir/git.tar.zst $git_dir
+tar -cf $root_dir/problems.tar.zst $problems_dir
+tar -cf $root_dir/gitosis_admin.tar.zst $gitosis_admin
+tar -cf $root_dir/dist.static.tar.zst $dist_static_dir
+tar -cf $root_dir/semantic.src.tar.zst $semantic_src_dir
+tar -cf $root_dir/apache2.config.tar.zst $apache2_config_dir
 cp $config_file $root_dir/
-#gdrive upload -r $root_dir
-#gdrive sync upload $backup_dir 1qzkzIWOkdtf2B4CXwrqlsx3JaumFBVH6
 rclone sync $root_dir dsa2023:dsajudge/all_$DATE
