@@ -35,13 +35,13 @@
       table.ui.inverted.celled.table.selectable( :class="{pointer: problem && problem.solutionVisible}" )
         thead
           tr
-            th.collapsing.center.aligned ID
+            th ID
             th By
             th Runtime
         tbody
           tr( v-for="sub of (stats.fastest?stats.fastest:[])"
               v-link="problem.solutionVisible ? {name: 'submission', params: {id: sub._id}} : null" )
-            td.collapsing.center.aligned( :class="{ 'blue-link': problem.solutionVisible }" ) {{ sub._id }}
+            td( :class="{ 'blue-link': problem.solutionVisible }" ) {{ sub._id }}
             td {{ _.get(sub, 'submittedBy.meta.name', '') }}
             td {{ probUtils.toDisplayTime(sub.runtime) }}
           
