@@ -8,6 +8,10 @@ $.fn.form.settings.rules.emptyOrMinLength = function(value, length) {
   return value === "" || value.length >= length;
 };
 
+$.fn.form.settings.rules.minLength = function(value, length) {
+  return value.length >= length;
+}
+
 $.fn.form.settings.rules.maxLength = function(value, length) {
   return value.length <= length;
 }
@@ -27,6 +31,10 @@ const formValidateObj = {
             {
                 type: 'maxLength[16]',
                 prompt: `New name should not be longer than 16 characters.`,
+            },
+            {
+                type: 'minLength[1]',
+                prompt: `New name cannot be empty.`,
             },
         ],
     },
