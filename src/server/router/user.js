@@ -121,7 +121,8 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
     return res.status(400).send('Unsupported SSH Key or it is too short!');
   }
   let newName = req.body['new-name'];
-  if (newName && newName.length >= 1) {
+  if (newName !== undefined) {
+    if (newName.length == 0) { return res.status(400).send('New name cannot be empty.'); }
     try {
       if (newName != req.user.meta.name) {
         if (newName.length > 16) {
