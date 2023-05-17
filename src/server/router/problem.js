@@ -14,7 +14,7 @@ const router = express.Router();
 router.get('/', wrap(async (req, res) => {
   const isUser = req.user;
   const isTA = req.user && (req.user.isAdmin() || req.user.isTA());
-  var ids=req.user.groups;
+  var ids = req.user ? req.user.groups : [];
   if(!ids) ids=[];
   ids=await Promise.all(ids.map(id => User.findOne({ "meta.id": id })));
   ids=ids.filter(user => user!=null).map(user => user._id);
