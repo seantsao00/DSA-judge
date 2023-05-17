@@ -11,6 +11,12 @@ const parser = new Parser({
 
 parser.addArgument(['problem_id'], { type: 'int', help: 'id of the problem' });
 parser.addArgument(['homework_id'], { type: 'int', help: 'id of the homework' });
+parser.addArgument(['late_days'], { type: 'int', help: 'number of days for late submissions' });
+
+function scoreRatio(ts, dl, late_days) {
+  if (ts <= dl) return 1;
+  return 1 - (ts - dl) / 86400000 / late_days;
+}
 
 (async () => {
   const args = parser.parseArgs();
@@ -21,40 +27,56 @@ parser.addArgument(['homework_id'], { type: 'int', help: 'id of the homework' })
     return;
   }
 
+  const softDL = homework.due;
+  const hardDL = new Date(homework.due);
+  hardDL.setDate(hardDL.getDate() + args.late_days);
+
   const submissions = await Submission.aggregate([{
     '$lookup': {
-      'from': 'users', 
-      'localField': 'submittedBy', 
-      'foreignField': '_id', 
+      'from': 'users',
+      'localField': 'submittedBy',
+      'foreignField': '_id',
       'as': 'roles'
     }
   }, {
     '$project': {
-      'ts': 1, 
-      'problem': 1, 
-      'result': 1, 
+      'ts': 1,
+      'problem': 1,
+      'points': 1,
       'roles': { '$arrayElemAt': [ '$roles.roles', 0] },
       'id': { '$arrayElemAt': ['$roles.meta.id', 0] }
     }
   }, {
     '$match': {
       '$and': [
-        { 'result': 'AC' }, 
-        { 'problem': args.problem_id }, 
-        { 'ts': { '$lt': homework.due } }, 
+        { 'problem': args.problem_id },
+        { 'ts': { '$lt': hardDL } },
         { 'roles': { '$nin': [ 'admin', 'TA' ] } }
       ]
     }
   }, {
-    '$project': { '_id': 1, 'id': 1 }
+    '$project': { '_id': 1, 'id': 1, 'points': 1, 'ts': 1 }
   }]);
+
+  const penalised = {};
+  submissions.forEach(submission => {
+    const ratio = scoreRatio(submission.ts, softDL, args.late_days);
+    const score = submission.points * ratio;
+    if (!(submission.id in penalised) || score > penalised[submission.id].score) {
+      penalised[submission.id] = {
+        '_id': submission._id,
+        'score': score
+      };
+    }
+  });
 
   const folder = `/home/DSA-2023/dsajudge/moss/${args.homework_id}_${args.problem_id}`;
   fs.mkdirSync(folder, { recursive: true }, (err) => { if (err) throw err; });
-  for (let i = 0; i < submissions.length; i++) {
-    fs.copyFileSync(`${config.dirs.submissions}/${submissions[i]._id}.cpp`, `${folder}/${submissions[i].id}_${submissions[i]._id}.cpp`, (err) => { if (err) throw err; });
+
+  for (const [uid, submission] of Object.entries(penalised)) {
+    fs.copyFileSync(`${config.dirs.submissions}/${submission._id}.cpp`, `${folder}/${uid}_${submission._id}.cpp`, (err) => { if (err) throw err; });
   }
-  
+
   console.log('done');
 
   return;
