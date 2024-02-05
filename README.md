@@ -29,7 +29,8 @@ sudo apt install libseccomp-dev libseccomp2 seccomp libcap-dev asciidoc gcc g++ 
 
 # Init
 gulp init
-# Semantic auto install is bugged
+# Install semantic-ui https://semantic-ui.com/introduction/getting-started.html
+npm install semantic-ui --save
 # So choose extend my settings > automatic manually when prompted
 
 # Build semantic again...
@@ -77,6 +78,9 @@ sudo chmod 755 /dev/shm/isolate/META
 
 # Build gitosis from https://github.com/res0nat0r/gitosis (git submission only)
 sudo adduser --system --shell /bin/sh --gecos 'git version control' --group --disabled-password --home /home/git git
+
+# If the git user already exists, make sure that /home/git/repositories is empty (backup the original directory somewhere before clearing it)
+
 # create ssh key: ssh-keygen
 # Initialize gitosis
 sudo -H -u git gitosis-init < ~/.ssh/id_rsa.pub

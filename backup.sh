@@ -20,5 +20,5 @@ tar -zcf $root_dir/problems.tar.gz $problems_dir/*/prob.md
 tar -zcf $root_dir/gitosis_admin.tar.gz $gitosis_admin
 #gdrive upload -r $root_dir
 #gdrive sync upload $backup_dir 1qzkzIWOkdtf2B4CXwrqlsx3JaumFBVH6
-rclone sync $root_dir dsa2021_backup:dsajudge_backup/$DATE
+rclone sync $root_dir dsa2024_backup:dsajudge_backup/$DATE
 

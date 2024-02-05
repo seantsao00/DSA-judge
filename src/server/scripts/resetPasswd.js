@@ -2,7 +2,7 @@
 
 require("./common");
 
-var _user = _interopRequireDefault(require("/home/DSA-2023/dsajudge/dist/model/user"));
+var _user = _interopRequireDefault(require("/home/DSA-2024/dsajudge/dist/model/user"));
 
 var _nodemailer = _interopRequireDefault(require("nodemailer"));
 
@@ -63,18 +63,18 @@ const resetUser = async (email, transporter) => {
   });
   user.password = hashed;
   await user.save();
-  const text = `Welcome to DSA2023, this email is to inform you that your DSA Judge account has been created.
+  const text = `Welcome to DSA2024, this email is to inform you that your DSA Judge account has been created.
 Here is your account and temporary password. (You can change your password after logging in.)
 
 - Account: ${email}
 - Password: ${randPass}
 
-Head on to https://dsa2023.csie.org and try it!
+Head on to https://dsa2024.csie.org and try it!
 `;
   const mailOptions = {
-    from: '"DSA2023" <dsa_ta@csie.ntu.edu.tw>',
+    from: '"DSA2024" <dsa_ta@csie.ntu.edu.tw>',
     to: email,
-    subject: '[DSA2023]Your DSA Judge Account',
+    subject: '[DSA2024]Your DSA Judge Account',
     text
   };
   await new Promise((resolve, reject) => {

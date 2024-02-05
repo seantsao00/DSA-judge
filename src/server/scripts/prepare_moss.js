@@ -6,7 +6,7 @@ import Homework from '/model/homework';
 import Submission from '/model/submission';
 
 const parser = new Parser({
-  description: 'Copy submissions of problem id y in homework id x (exclude admin & TA) before deadline to /home/DSA-2023/dsajudge/moss/x_y/'
+  description: 'Copy submissions of problem id y in homework id x (exclude admin & TA) before deadline to /home/DSA-2024/dsajudge/moss/x_y/'
 });
 
 parser.addArgument(['problem_id'], { type: 'int', help: 'id of the problem' });
@@ -70,7 +70,7 @@ function scoreRatio(ts, dl, late_days) {
     }
   });
 
-  const folder = `/home/DSA-2023/dsajudge/moss/${args.homework_id}_${args.problem_id}`;
+  const folder = `/home/DSA-2024/dsajudge/moss/${args.homework_id}_${args.problem_id}`;
   fs.mkdirSync(folder, { recursive: true }, (err) => { if (err) throw err; });
 
   for (const [uid, submission] of Object.entries(penalised)) {
