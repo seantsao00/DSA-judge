@@ -93,6 +93,7 @@ git clone git@localhost:gitosis-admin.git
 sudo cp /bin/cp /home/git/; sudo chown git:git /home/git/cp; sudo chmod +s /home/git/cp;
 
 # Initialize init git repository (git submission only)
+# Edit files inside git/init.git/hooks to change upload url
 sudo cp -r git/init.git /home/git/repositories/
 sudo chown -R git:git /home/git/repositories/init.git
 sudo chmod 755 /home/git/repositories/init.git/hooks/*
@@ -108,7 +109,7 @@ sudo cp git/serve.py /usr/local/lib/python2.7/dist-packages/gitosis-0.2-py2.7.eg
 # semantic change: `(cd semantic; gulp build); forever restartall;`
 
 # install apache2 server or nginx server and redirect connection to port 80 to http://localhost:3333/ and start the server
-# install pymongo from pip3
+# install pymongo from pip3, make sure that update_git.py runs without error
 # many judge_name, domain_name, email_address, ... need to be changed
 ```
 
