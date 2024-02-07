@@ -124,7 +124,7 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
   if (newName !== undefined) {
     if (newName.length == 0) { return res.status(400).send('New name cannot be empty.'); }
     try {
-      if (newName != req.user.meta.name) {
+      if (newName.normalize() !== req.user.meta.name.normalize()) {
         if (newName.length > 16) {
           return res.status(400).send('New name should be under 16 characters.');
         } else if (!/^[A-Za-z0-9]+$/.test(newName)) {
