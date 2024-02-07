@@ -127,7 +127,7 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
       if (newName.normalize() !== req.user.meta.name.normalize()) {
         if (newName.length > 16) {
           return res.status(400).send('New name should be under 16 characters.');
-        } else if (!/^[A-Za-z0-9]+$/.test(newName)) {
+        } else if (!/^[A-Za-z0-9\u4e00-\u9fff]+$/.test(newName)) {
           return res.status(400).send('New name contains illegal characters.');
         } else {
           req.user.meta.name = newName;

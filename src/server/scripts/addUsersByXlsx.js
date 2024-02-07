@@ -55,7 +55,7 @@ const main = async () => {
 
   // Choose the correct columns according to input xls file
   // const ID=3, NAME = 4, EMAIL = 5;
-  const ID = 4, NAME = 2, EMAIL = 1, ROLE = 3;
+  const ID = 1, NAME = 0, EMAIL = 3, ROLE = 2;
   for (let r of rows) {
     if (!r || !r.length) break;
     const td = r.split(',');
@@ -65,6 +65,7 @@ const main = async () => {
       name: td[NAME],
       roles: [td[ROLE]]
     };
+    if (!td[EMAIL].length) break;
     console.log(td[EMAIL], td[ID], td[NAME], td[ROLE]);
     await newUser(td[EMAIL], td[ID], td[NAME], td[ROLE], mailTransporter);
   }

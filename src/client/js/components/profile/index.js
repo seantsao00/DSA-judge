@@ -17,7 +17,7 @@ $.fn.form.settings.rules.maxLength = function(value, length) {
 }
 
 $.fn.form.settings.rules.alphanumeric = function(value) {
-  return /^[A-Za-z0-9]*$/.test(value);
+  return /^[A-Za-z0-9\u4e00-\u9fff]*$/.test(value);
 }
 
 const formValidateObj = {
@@ -26,7 +26,7 @@ const formValidateObj = {
         rules: [
             {
                 type: 'alphanumeric',
-                prompt: `New name should only contain alphanumeric characters.`,
+                prompt: `New name contains invalid characters.`,
             },
             {
                 type: 'maxLength[16]',
