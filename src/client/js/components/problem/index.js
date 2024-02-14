@@ -66,7 +66,6 @@ export default Vue.extend({
         wrapper.append(div);
         percent.push(100 * g.points / totp);
       }
-
       wrapper.progress({
         showActivity: false,
         text: {
