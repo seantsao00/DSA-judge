@@ -29,8 +29,7 @@ sudo apt install libseccomp-dev libseccomp2 seccomp libcap-dev asciidoc gcc g++ 
 
 # Init
 gulp init
-# Install semantic-ui https://semantic-ui.com/introduction/getting-started.html
-npm install semantic-ui --save
+# Install fomantic-ui https://fomantic-ui.com/introduction/getting-started.html
 # So choose extend my settings > automatic manually when prompted
 
 # Build semantic again...
