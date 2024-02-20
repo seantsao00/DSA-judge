@@ -76,7 +76,6 @@ const newUser = async (email, id, name, role, transporter) => {
   const randPass = randomString.generate(10);
   const hashed = await promisify(bcrypt.hash)(randPass, 10);
 
-  // const roles = ['student'];
   let user = await User.findOne({email: email});
   if (!user) {
     user = new User({
@@ -89,10 +88,8 @@ const newUser = async (email, id, name, role, transporter) => {
       }
     });
   } else {
-    user.password = hashed;
-    user.roles = [role];
-    user.meta.id = id;
-    user.meta.name = name;
+       console.log(`User ${name} ${email} already exists`);
+      return;
   }
 
   const text = (
