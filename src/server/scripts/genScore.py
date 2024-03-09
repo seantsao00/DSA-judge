@@ -6,10 +6,10 @@ users=db['users']
 hws=db['homeworks']
 submits=db['submissions']
 
-students=users.find({'roles':'student'})
+students=users.find({'roles':'official-student'})
 idt={}
 for student in students:
-    idt[student['_id']]=student['meta']['id']
+    idt[student['_id']]=student['email']
 
 homeworkid=input('homeworkid: ')
 hw=hws.find_one({'_id':int(homeworkid)})
@@ -38,6 +38,14 @@ for sub in subs:
         delta=ts-due
         point*=max(0.,1-delta.total_seconds()/(86400*5))
     scores[uid][pid]=max(scores[uid][pid],point)
+
+students=users.find({'roles':'official-student'})
+for student in students: #add students with 0 score
+    uid = student['email'] 
+    if uid not in scores:
+        scores[uid]={}
+        for p in pids:
+            scores[uid][p]=0
 
 out=input('output file: ')
 with open(out,'w') as f:
