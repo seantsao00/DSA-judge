@@ -9,7 +9,8 @@ import temp from 'temp';
 import {promisify} from 'bluebird';
 import {InvalidOperationError} from 'common-errors';
 
-const ISOLATE = path.join(__dirname, 'isolate');
+// const ISOLATE = path.join(__dirname, 'isolate');
+const ISOLATE = 'isolate';
 
 function isolateWrap (opt,boxId) {
   return new Promise((resolve, reject) => {
@@ -153,7 +154,7 @@ export async function run (worker_id, exec, inFile, outFile, errFile, timeLimit,
     memLimit = 1 << 20;
   }
   const opt = {
-    z: 1,
+    // z: 1,
     cg: true,
     'box-id': worker_id,
     meta: path.join(metaDir, worker_id.toString()),
