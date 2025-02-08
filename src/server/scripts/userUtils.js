@@ -77,17 +77,17 @@ const addUser = async (args, transporter) => {
 
 
     const text = (
-`Welcome to DSA2024, This email is just to inform you that your DSA Judge account is created.
+`Welcome to DSA2025, This email is just to inform you that your DSA Judge account is created.
 Here are your account and password.
 
 - Account: ${args.user}
 - Password: ${randPass}
 
-Head on to https://dsa2024.csie.org to try it !
+Head on to https://dsa-2025.csie.org to try it !
 ` );
 
     const mailOptions = {
-        from: '"DSA2024" <dsa_ta@csie.ntu.edu.tw>',
+        from: '"DSA2025" <dsa_ta@csie.ntu.edu.tw>',
         to: args.user,
         subject: 'Your DSA Judge Account',
         text,
@@ -126,13 +126,13 @@ const resetUser = async (args, transporter) => {
 
 - Password: ${randPass}
 
-Head on to https://dsa2024.csie.org and change it.
+Head on to https://dsa-2025.csie.org and change it.
 ` );
 
     const mailOptions = {
-        from: '"DSA2024" <dsa_ta@csie.ntu.edu.tw>',
+        from: '"DSA2025" <dsa_ta@csie.ntu.edu.tw>',
         to: args.user,
-        subject: `[DSA2024]Password of your DSA Judge Account has been reset`,
+        subject: `[DSA2025]Password of your DSA Judge Account has been reset`,
         text,
     };
 

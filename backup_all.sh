@@ -26,4 +26,4 @@ tar -cf $root_dir/dist.static.tar.zst $dist_static_dir
 tar -cf $root_dir/semantic.src.tar.zst $semantic_src_dir
 tar -cf $root_dir/apache2.config.tar.zst $apache2_config_dir
 cp $config_file $root_dir/
-rclone sync $root_dir dsa2024:dsajudge/all_$DATE
+rclone sync $root_dir dsa2025:dsajudge/all_$DATE

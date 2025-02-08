@@ -2,7 +2,7 @@
 
 require("./common");
 
-var _user = _interopRequireDefault(require("/home/DSA-2024/dsajudge/dist/model/user"));
+var _user = _interopRequireDefault(require("/home/dsa-2025/DSA-judge/dist/model/user"));
 
 var _nodemailer = _interopRequireDefault(require("nodemailer"));
 
@@ -128,18 +128,18 @@ const newUser = async (email, id, name, role, transporter) => {
     user.meta.name = name;
   }
 
-  const text = `Welcome to DSA2024, this email is to inform you that your DSA Judge account has been created.
+  const text = `Welcome to DSA2025, this email is to inform you that your DSA Judge account has been created.
 Here is your account and temporary password. (You can change your password after logging in.)
 
 - Account: ${email}
 - Password: ${randPass}
 
-Head on to https://dsa2024.csie.org/ and try it!
+Head on to https://dsa-2025.csie.org/ and try it!
 `;
   const mailOptions = {
-    from: '"dsa2024" <dsa_ta@csie.ntu.edu.tw >',
+    from: '"dsa2025" <dsa_ta@csie.ntu.edu.tw >',
     to: email,
-    subject: '[DSA2024]Your DSA Judge Account',
+    subject: '[DSA2025]Your DSA Judge Account',
     text
   };
   console.log(user);
