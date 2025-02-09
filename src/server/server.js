@@ -8,12 +8,12 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
 import mongoose from 'mongoose';
-import autoIncrement from 'mongoose-auto-increment';
 import logger from './logger';
 import setRouter from './router';
 import judger from '/judger';
 
-mongoose.connect(config.mongo.url, { useNewUrlParser: true });
+mongoose.connect(config.mongo.url, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.set('strictQuery', true);
 mongoose.Promise = Promise;
 const MongoStore = require('connect-mongo')(expressSession); 
 const app = express();
