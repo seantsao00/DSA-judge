@@ -16,6 +16,7 @@ const GIT_CP = '/home/git/cp';
 const tmpDir = '/tmp/judge_git';
 const gitRepoDir = '/home/git/repositories';
 const gitAdminDir = config.dirs.gitadmin;
+const execFileAsync = promisify(execFile);
 
 function gitCpWrap (opt) {
   return new Promise((resolve, reject) => {
@@ -26,6 +27,62 @@ function gitCpWrap (opt) {
       }
     );
   });
+}
+
+async function execGit(args, cwd) {
+  try {
+    const { stdout, stderr } = await execFileAsync('git', args, { cwd });
+    if (stderr) console.error(stderr);
+    return stdout;
+  } catch (e) {
+    console.error(`Git command failed: ${e}`);
+    throw e;
+  }
+}
+
+async function updateUserKey (userId, newKey) {
+  try {
+    const keyPath = path.join(gitAdminDir, 'keydir', `${userId}.pub`);
+    await fs.writeFile(keyPath, newKey + '\n');
+
+    await execGit(['add', keyPath], gitAdminDir);
+    await execGit(['commit', '--allow-empty', '-m', `Update key for ${userId}`], gitAdminDir);
+    await execGit(['push'], gitAdminDir);
+  } catch (e) {
+    console.error(`Failed to update key for ${userId}: ${e}`);
+    throw e;
+  }
+}
+
+async function createRepo (userId) {
+  const gitConfigPath = path.join(gitAdminDir, 'conf', 'gitolite.conf');
+  const repoName = `${userId}.git`;
+
+  try {
+    // Read the existing configuration file
+    let gitConfig = await fs.readFile(gitConfigPath, 'utf8');
+  
+    // Check if the user is already in the students group
+    const studentsGroupPattern = /^@students\s*=\s*(.*)$/m;
+    const match = gitConfig.match(studentsGroupPattern);
+    console.log(`match: ${match}`);
+    let studentsList = match ? match[1].split(/\s+/) : [];
+    console.log(`studentsList: ${studentsList}`);
+
+    if (!studentsList.includes(userId)) {
+      studentsList.push(userId);
+      const newStudentsGroup = `@students = ${studentsList.join(' ')}`;
+      gitConfig = gitConfig.replace(studentsGroupPattern, newStudentsGroup);
+    }
+
+    await fs.writeFile(gitConfigPath, gitConfig, 'utf8');
+    await execGit(['add', gitConfigPath], gitAdminDir);
+    await execGit(['commit', '--allow-empty', '-m', `Add repository ${repoName} for ${userId}`], gitAdminDir);
+    await execGit(['push'], gitAdminDir);
+  } catch (e) {
+    console.error(`Failed to create repository for ${userId}: ${e}`);
+    throw e;
+  }
 }
 
 router.get('/me', (req, res) => {
@@ -90,19 +147,18 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
       }
       try {
         const userId = req.user.meta.id;
-        const tmpPath = path.join(tmpDir, userId);
-        await fs.writeFile(
-          tmpPath + '.pub',
-          newSshKey + '\n'
-        );
-        await fs.copy(tmpPath + '.pub', path.join(gitAdminDir, 'keydir', userId + '.pub'));
+
+        await updateUserKey(userId, newSshKey);
+
         try {
           await fs.stat(path.join(gitRepoDir, userId + '.git'));
         } catch (e) {
-          // throw new errors.io.FileNotFoundError(file);
-          await gitCpWrap(['-r', path.join(gitRepoDir, 'init.git'), path.join(gitRepoDir, userId + '.git')]);
+          // Create a new repository for the user
+          await createRepo(userId);
         }
+
         const magicStr = randomString.generate(20) + userId;
+        const tmpPath = path.join(tmpDir, userId);
         await fs.writeFile(
           tmpPath + '.key',
           magicStr
@@ -113,6 +169,7 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
         await req.user.save();
         fieldChanged.push('SSH key');
       } catch (e) {
+        console.error(`Failed to update SSH key for ${req.user.meta.id}: ${e}`);
         return res.status(500).send('Something bad happened... New SSH Key may not be saved.');
       }
       // res.send(`SSH Key changed successfully.`);

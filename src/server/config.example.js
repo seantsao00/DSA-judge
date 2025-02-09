@@ -6,7 +6,7 @@ export default {
         problems: path.join(__dirname, './problems'),
         submissions: path.join(__dirname, './submissions'),
         cfiles: path.join(__dirname, './cfiles'),
-        gitadmin: path.join(__dirname, './gitosis-admin'),
+        gitadmin: path.join(__dirname, './gitolite-admin'),
         homeworks: path.join(__dirname, './homeworks'),
         isolate: "/dev/shm/isolate",
     },

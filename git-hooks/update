@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+import json
+import subprocess
+import sys
+
+import requests
+
+# Thr URL of the judge
+judge_url = 'https://dsa-2025.csie.org'
+
+refname = sys.argv[1]
+old_commit = sys.argv[2]
+new_commit = sys.argv[3]
+
+# Ignore all branches except main
+if refname != 'refs/heads/main':
+    sys.exit(0)
+
+# Store the change files
+if old_commit != '0000000000000000000000000000000000000000':
+    changed = subprocess.Popen(['git', 'diff', '--name-only', old_commit,
+                                new_commit], stdout=subprocess.PIPE)
+else:
+    changed = subprocess.Popen(['git', 'show', '--pretty=', '--name-only',
+                                new_commit], stdout=subprocess.PIPE)
+
+# The expected file name of submitted file
+file_name = '/main.c'
+
+submitted = False
+failed = False
+
+for line in changed.stdout:
+
+    if line == b'':
+        continue
+
+    line = line.decode('utf-8')[:-1]
+
+    # For each changed file
+    if (line.endswith(file_name)):
+        front = line[:-len(file_name)]
+
+        problem_id = int(front)
+
+        try:
+            if problem_id >= 0:
+                proc = subprocess.Popen(['git', 'show', f'{new_commit}:{line}'],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                with open('hooks/key', 'r') as f:
+                    data = {'file': proc.stdout.read().decode('utf-8', errors='ignore'),
+                            'key': f.read(), 'gitHash': new_commit}
+
+                if proc.wait() != 0:
+                    raise Exception('Not Found')
+
+                print(f'\033[92mYou submit Problem #{problem_id} with {new_commit} !\033[0m')
+
+                try:
+                    res = requests.post(f'{judge_url}/submit/{problem_id}', json=data)
+                except:
+                    pass
+
+                try:
+                    result = json.loads(res.content)
+                    print(
+                        f'\033[93mSubmission: \033[94m\033[4m{judge_url}/#!/submission/{result["id"]}\033[0m')
+                    submitted = True
+                except:
+                    try:
+                        print('\033[91m'+res.content+'\033[0m')
+                    except:
+                        print('\033[91mSomething bad happen...\033[0m')
+                        print('\033[91mMaybe you can try again later...\033[0m')
+                    failed = True
+        except:
+            pass
+
+if submitted and not failed:
+    sys.exit(0)
+else:
+    sys.exit(1)
