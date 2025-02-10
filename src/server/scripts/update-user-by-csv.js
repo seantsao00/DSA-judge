@@ -10,7 +10,7 @@ import { connectDatabase, closeDatabase } from './db';
 import User from '/model/user';
 
 const parser = new Parser({
-  description: 'Add a new user, and send password mail',
+  description: 'Add a users in the CSV file and not exist in the database, and send password mail',
   addHelp: true
 });
 
@@ -72,7 +72,7 @@ const main = async () => {
         if (!email) continue;
 
         console.log(email, id, name, role);
-        await newUser(email, id, name, role, mailTransporter);
+        await newUserIfNotExist(email, id, name, role, mailTransporter);
       }
 
       console.log('Processing finished...');
@@ -81,27 +81,26 @@ const main = async () => {
     });
 };
 
-const newUser = async (email, id, name, role, transporter) => {
+const newUserIfNotExist = async (email, id, name, role, transporter) => {
   const randPass = randomString.generate(10);
   const hashed = await promisify(bcrypt.hash)(randPass, 10);
 
   let user = await User.findOne({ email: email });
-  if (!user) {
-    user = new User({
-      email: email,
-      password: hashed,
-      roles: [role],
-      meta: {
-        id,
-        name
-      }
-    });
-  } else {
-    user.password = hashed;
-    user.roles = [role];
-    user.meta.id = id;
-    user.meta.name = name;
+
+  if (user) {
+    console.log(`User ${email} already exists`);
+    return;
   }
+
+  user = new User({
+    email: email,
+    password: hashed,
+    roles: [role],
+    meta: {
+      id,
+      name
+    }
+  });
 
   const text = (`
 Hi ${name},
