@@ -18,7 +18,7 @@ import crypto from 'crypto';
 const router = express.Router();
 
 async function proceedHw(hw, userID, isAdmin) {
-    await hw.populate('problems.problem', 'name visible', isAdmin ? {} : {visible: true}).execPopulate();
+    await hw.populate('problems.problem', 'name visible', isAdmin ? {} : {visible: true});
     const ret = hw.toObject();
     let totalPoints = 0, totalAC = 0;
     const hwRes = await HomeworkResult.findOne()

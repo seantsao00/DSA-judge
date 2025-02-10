@@ -101,7 +101,7 @@ export async function lazyUpdateHomeworkResult(hw, submission) {
 }
 
 export async function updateHomeworkResult(resObj) {
-    await resObj.populate('homework').execPopulate();
+    await resObj.populate('homework');
     const {user, problem} = resObj;
     const hw = resObj.homework;
     const {due} = hw;

@@ -36,7 +36,7 @@ router.put('/:id', wrap(async (req, res) => {
     const homework = req.body;
     _.unset(homework, ['_id', '__v', 'totalPoints', 'problemNum']);
     _.assignIn(hw, homework);
-    await hw.populate('problems.problem', 'testdata.points').execPopulate();
+    await hw.populate('problems.problem', 'testdata.points');
     hw.problemNum = hw.problems.length;
     hw.totalPoints = _.reduce(hw.problems, (v, x) => v + x.weight * x.problem.testdata.points, 0);
     await hw.save();
