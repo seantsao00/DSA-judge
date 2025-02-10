@@ -1,6 +1,6 @@
 import passport from 'passport';
-import {Strategy as LocalStrategy} from 'passport-local';
-import {promisifyAll} from 'bluebird';
+import { Strategy as LocalStrategy } from 'passport-local';
+import { promisifyAll } from 'bluebird';
 import bcrypt from 'bcrypt';
 import User from '/model/user';
 
@@ -12,8 +12,8 @@ passport.use(new LocalStrategy({
 }, async (email, password, done) => {
     let user;
     try {
-        user = await User.findOne({email});
-    } catch(err) {
+        user = await User.findOne({ email });
+    } catch (err) {
         done(err);
     }
     if (!user) {
@@ -21,23 +21,23 @@ passport.use(new LocalStrategy({
     }
 
     let res = await bcrypt.compareAsync(password, user.password);
-	if (res) {
-        done(null, {email: user.email, _id: user._id, roles: user.roles});
+    if (res) {
+        done(null, { email: user.email, _id: user._id, roles: user.roles });
     } else {
         done(null, false, { message: 'Incorrect password.' });
     }
 }));
 
-passport.serializeUser( (user,done) => {
+passport.serializeUser((user, done) => {
     done(null, user._id);
 });
 
-passport.deserializeUser( (user, done) => {
+passport.deserializeUser((user, done) => {
     (async () => {
         let u;
         try {
-            u = await User.findOne({_id: user});
-        } catch(e) {
+            u = await User.findOne({ _id: user });
+        } catch (e) {
             done(e, null);
             return;
         }
@@ -54,15 +54,17 @@ export default (app) => {
         (req, res) => {
             res.send({
                 result: "ok",
-            }); 
-        } 
+            });
+        }
     );
 
     app.post('/logout',
-        (req, res) => {
-            req.session.destroy();
-            req.logout();
+        (req, res, next) => {
+            req.logout((err) => {
+                if (err) console.error(err);
+                req.session.destroy();
+            });
             res.sendStatus(203);
-        } 
+        }
     );
 };
