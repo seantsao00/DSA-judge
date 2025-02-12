@@ -1,84 +1,131 @@
 #!/usr/bin/env python3
 
-import json
 import subprocess
 import sys
+from pathlib import Path
 
 import requests
 
-# Thr URL of the judge
-judge_url = 'https://dsa-2025.csie.org'
 
-refname = sys.argv[1]
-old_commit = sys.argv[2]
-new_commit = sys.argv[3]
+def get_changed_file_paths(old_rev: str, new_rev: str) -> list[Path]:
+    '''
+    Returns a list of changed files between old_rev and new_rev using git diff-tree.
+    '''
+    # Special handling: If this is a branch creation, old_rev may be all zeros.
+    if old_rev == '0' * 40:
+        # For a new branch, list all files in the new commit.
+        cmd = ['git', 'ls-tree', '-r', '--name-only', new_rev]
+    else:
+        cmd = ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', old_rev, new_rev]
 
-# Ignore all branches except main
-if refname != 'refs/heads/main':
-    sys.exit(0)
+    try:
+        result = subprocess.run(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, check=True, text=True)
+        return [Path(f) for f in result.stdout.strip().splitlines()]
+    except subprocess.CalledProcessError as e:
+        sys.stderr.write(f'Error running command: {e.stderr}\n')
+        return []
 
-# Store the change files
-if old_commit != '0000000000000000000000000000000000000000':
-    changed = subprocess.Popen(['git', 'diff', '--name-only', old_commit,
-                                new_commit], stdout=subprocess.PIPE)
-else:
-    changed = subprocess.Popen(['git', 'show', '--pretty=', '--name-only',
-                                new_commit], stdout=subprocess.PIPE)
 
-# The expected file name of submitted file
-file_name = '/main.c'
+def main(refname: str, old_commit: str, new_commit: str, judge_url: str):
+    if refname != 'refs/heads/main':
+        print(f'\033[93mIgnoring refname {refname}.\033[0m')
+        return 0
 
-submitted = False
-failed = False
+    print(
+        f'\033[93mChecking for submissions between {old_commit[:7]} and {new_commit[:7]}...\033[0m')
 
-for line in changed.stdout:
+    changed_file_paths = get_changed_file_paths(old_commit, new_commit)
 
-    if line == b'':
-        continue
+    print(f'\033[93mChanged files:\033[0m')
+    for f in changed_file_paths:
+        print(f'\033[93m    {f}\033[0m')
 
-    line = line.decode('utf-8')[:-1]
+    submitted = False
+    failed = False
 
-    # For each changed file
-    if (line.endswith(file_name)):
-        front = line[:-len(file_name)]
+    for changed_file_path in changed_file_paths:
+        if len(changed_file_path.parts) != 2:
+            continue
 
-        problem_id = int(front)
+        parent, filename = changed_file_path.parts
+
+        if not filename.endswith('.c'):
+            continue
+
+        if not parent.isdigit() or not parent == filename[:-2]:
+            continue
+
+        problem_id = int(parent)
+        if problem_id < 0:
+            continue
 
         try:
-            if problem_id >= 0:
-                proc = subprocess.Popen(['git', 'show', f'{new_commit}:{line}'],
-                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            changed_file_data = subprocess.run(['git', 'show', f'{new_commit}:{changed_file_path}'],
+                                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                               check=True, text=True).stdout
+        except Exception as e:
+            print(f'\033[91mError running command: {e.stderr}\033[0m')
+            failed = True
+            continue
 
-                with open('hooks/key', 'r') as f:
-                    data = {'file': proc.stdout.read().decode('utf-8', errors='ignore'),
-                            'key': f.read(), 'gitHash': new_commit}
+        try:
+            with open('hooks/key', 'r') as f:
+                key = f.read().strip()
+        except Exception as e:
+            print(f'\033[91mError reading key: {e}\033[0m')
+            failed = True
+            continue
 
-                if proc.wait() != 0:
-                    raise Exception('Not Found')
+        data = {'file': changed_file_data, 'key': key, 'gitHash': new_commit}
 
-                print(f'\033[92mYou submit Problem #{problem_id} with {new_commit} !\033[0m')
+        print(f'\033[92mYou submit Problem #{problem_id} with {new_commit[:7]}!\033[0m')
 
-                try:
-                    res = requests.post(f'{judge_url}/submit/{problem_id}', json=data)
-                except:
-                    pass
+        try:
+            res = requests.post(f'{judge_url}/submit/{problem_id}', json=data)
+        except Exception as e:
+            print(f'\033[91mError submitting: {e}\033[0m')
+            failed = True
+            continue
 
-                try:
-                    result = json.loads(res.content)
-                    print(
-                        f'\033[93mSubmission: \033[94m\033[4m{judge_url}/#!/submission/{result["id"]}\033[0m')
+        try:
+            if res.ok:
+                result = res.json()
+                submission_id = result.get("id")
+                if submission_id:
+                    print(f'\033[93mSubmission URL: '
+                          f'\033[94m\033[4m{judge_url}/#!/submission/{submission_id}\033[0m')
                     submitted = True
-                except:
-                    try:
-                        print('\033[91m'+res.content+'\033[0m')
-                    except:
-                        print('\033[91mSomething bad happen...\033[0m')
-                        print('\033[91mMaybe you can try again later...\033[0m')
+                else:
+                    print(f'\033[91mUnexpected response format: {result}\033[0m')
                     failed = True
-        except:
-            pass
+            else:
+                print(f'\033[91mSubmission failed: {res.status_code}\033[0m')
+                print(f'\033[91mError response: {res.text}\033[0m')
+                failed = True
+        except Exception as e:
+            print(f'\033[91mError parsing response: {e}\033[0m')
+            print(f'\033[91mInvalid JSON response from server: {res.text}\033[0m')
+            failed = True
 
-if submitted and not failed:
-    sys.exit(0)
-else:
-    sys.exit(1)
+    if not failed:
+        if submitted:
+            print('\033[92mAll submissions are successful!\033[0m')
+        else:
+            print('\033[93mNo submission is made.\033[0m')
+        return 0
+    else:
+        print('\033[91mSome submissions are failed.\033[0m')
+        return 1
+
+
+if __name__ == '__main__':
+    # Thr URL of the judge
+    judge_url = 'https://dsa-2025.csie.org'
+
+    refname = sys.argv[1]
+    old_commit = sys.argv[2]
+    new_commit = sys.argv[3]
+
+    ret = main(refname, old_commit, new_commit, judge_url)
+    sys.exit(ret)
