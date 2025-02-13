@@ -1,24 +1,23 @@
 import winston from 'winston';
-import wsconf from 'winston/lib/winston/config';
 import moment from 'moment-timezone';
 
+const customFormat = winston.format.printf(({ level, message, timestamp, ...meta }) => {
+    const levelStr = winston.format.colorize().colorize(level, `[${level.toUpperCase()}]`);
+    const messageStr = winston.format.colorize().colorize(level, message || '');
+    const metaStr = Object.keys(meta).length ? `\n\t${JSON.stringify(meta, null, 2)}` : '';
+
+    return `${levelStr} ${timestamp} - ${messageStr} ${metaStr}`;
+});
+
 const logger = winston.createLogger({
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: () => moment().tz('Asia/Taipei').format('MM/DD hh:mm:ss'),
+        }),
+        customFormat
+    ),
     transports: [
-        new winston.transports.Console({
-            timestamp: function() {
-                return moment().tz('Asia/Taipei').format('MM/DD hh:mm:ss');
-            },
-            formatter: function(options) {
-                const {level, message, meta} = options;
-                const levelStr = wsconf.colorize(options.level, '[' + options.level.toUpperCase() + ']');
-                const messageStr = wsconf.colorize(options.level, message || '');
-                const dateStr = options.timestamp();
-                const metaStr = (meta && Object.keys(options.meta).length 
-                    ? '\n\t' + JSON.stringify(options.meta, null, 2) : '');
-                return `${levelStr} @${dateStr} - ${messageStr} ${metaStr}`;
-            },
-            colorize: true,
-        })
+        new winston.transports.Console()
     ],
 });
 
