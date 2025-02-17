@@ -10,15 +10,15 @@ $.fn.form.settings.rules.emptyOrMinLength = function(value, length) {
 
 $.fn.form.settings.rules.minLength = function(value, length) {
   return value.length >= length;
-}
+};
 
 $.fn.form.settings.rules.maxLength = function(value, length) {
   return value.length <= length;
-}
+};
 
 $.fn.form.settings.rules.alphanumeric = function(value) {
   return /^[A-Za-z0-9\u4e00-\u9fff]*$/.test(value);
-}
+};
 
 const formValidateObj = {
     'new-name': {
@@ -40,12 +40,7 @@ const formValidateObj = {
     },
     'new-sshkey': {
         identifier: 'new-sshkey',
-        rules: [
-            {
-                type: 'emptyOrMinLength[100]',
-                prompt: `SSH key too short`,
-            },
-        ],
+        rules: [],
     },
     'new-password': {
         identifier: 'new-password',
