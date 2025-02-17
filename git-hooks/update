@@ -11,23 +11,30 @@ def get_changed_file_paths(old_rev: str, new_rev: str) -> list[Path]:
     '''
     Returns a list of changed files between old_rev and new_rev using git diff-tree.
     '''
-    # Special handling: If this is a branch creation, old_rev may be all zeros.
-    if old_rev == '0' * 40:
-        # For a new branch, list all files in the new commit.
-        cmd = ['git', 'ls-tree', '-r', '--name-only', new_rev]
-    else:
-        cmd = ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', old_rev, new_rev]
-
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, check=True, text=True)
-        return [Path(f) for f in result.stdout.strip().splitlines()]
+        existing_files = set(subprocess.run(
+            ['git', 'ls-tree', '-r', '--name-only', new_rev],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
+        ).stdout.strip().splitlines())
     except subprocess.CalledProcessError as e:
-        sys.stderr.write(f'Error running command: {e.stderr}\n')
+        sys.stderr.write(f'\033[91mError running command: {e.stderr}\033[0m\n')
         return []
 
+    if old_rev == '0' * 40:
+        return [Path(f) for f in existing_files]
+    else:
+        try:
+            changed_files = set(subprocess.run(
+                ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', old_rev, new_rev],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
+            ).stdout.strip().splitlines())
+        except subprocess.CalledProcessError as e:
+            sys.stderr.write(f'Error running command: {e.stderr}\n')
+            return []
+        return [Path(f) for f in existing_files.intersection(changed_files)]
 
-def main(refname: str, old_commit: str, new_commit: str, judge_url: str):
+
+def main(refname: str, old_commit: str, new_commit: str, judge_url: str) -> int:
     if refname != 'refs/heads/main':
         print(f'\033[93mIgnoring refname {refname}.\033[0m')
         return 0
@@ -36,6 +43,10 @@ def main(refname: str, old_commit: str, new_commit: str, judge_url: str):
         f'\033[93mChecking for submissions between {old_commit[:7]} and {new_commit[:7]}...\033[0m')
 
     changed_file_paths = get_changed_file_paths(old_commit, new_commit)
+
+    if not changed_file_paths:
+        print(f'\033[93mNo changed files found.\033[0m')
+        return 0
 
     print(f'\033[93mChanged files:\033[0m')
     for f in changed_file_paths:
