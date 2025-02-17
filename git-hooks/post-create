@@ -1,0 +1,7 @@
+#! /bin/sh
+# POST_CREATE <repo> <user> <invoking_operation>
+
+TMP_KEY_DIR="/home/git/key_tmp"
+
+cp "$TMP_KEY_DIR/$3"  "/home/git/repositories/$2.git/hooks/key"
+rm -f "$TMP_KEY_DIR/$3"

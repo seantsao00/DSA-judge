@@ -17,8 +17,6 @@ async function updateMeta (id, prob) {
   }
   if (!stat.isFile()) return;
   const json = await promisify(jsonfile.readFile)(metaFile);
-  console.log('Meta file:');
-  console.log(json);
 
   // eslint-disable-next-line require-atomic-updates
   if (_.has(json, 'name')) prob.name = _.get(json, 'name');

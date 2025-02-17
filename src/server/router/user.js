@@ -11,14 +11,16 @@ import _ from 'lodash';
 import randomString from 'randomstring';
 import User from '/model/user';
 const router = express.Router();
+import logger from '/logger';
 
 const GIT_CP = '/home/git/cp';
 const tmpDir = '/tmp/judge_git';
+const gitHomeDir = '/home/git';
 const gitRepoDir = '/home/git/repositories';
 const gitAdminDir = config.dirs.gitadmin;
 const execFileAsync = promisify(execFile);
 
-function gitCpWrap (opt) {
+function gitCpWrap(opt) {
   return new Promise((resolve, reject) => {
     execFile(GIT_CP, opt, {},
       (err, stdout, stderr) => {
@@ -32,15 +34,15 @@ function gitCpWrap (opt) {
 async function execGit(args, cwd) {
   try {
     const { stdout, stderr } = await execFileAsync('git', args, { cwd });
-    if (stderr) console.error(stderr);
+    if (stderr) logger.error(`Git command git ${args.join(' ')} failed`, stderr);
     return stdout;
   } catch (e) {
-    console.error(`Git command failed: ${e}`);
+    logger.error(`Failed to execute git ${args.join(' ')}`, e);
     throw e;
   }
 }
 
-async function updateUserKey (userId, newKey) {
+async function updateUserKey(userId, newKey) {
   try {
     const keyPath = path.join(gitAdminDir, 'keydir', `${userId}.pub`);
     await fs.writeFile(keyPath, newKey + '\n');
@@ -49,25 +51,24 @@ async function updateUserKey (userId, newKey) {
     await execGit(['commit', '--allow-empty', '-m', `Update key for ${userId}`], gitAdminDir);
     await execGit(['push'], gitAdminDir);
   } catch (e) {
-    console.error(`Failed to update key for ${userId}: ${e}`);
+    logger.error(`Failed to update key for ${userId}`, e);
     throw e;
   }
 }
 
-async function createRepo (userId) {
+async function createRepo(userId) {
   const gitConfigPath = path.join(gitAdminDir, 'conf', 'gitolite.conf');
   const repoName = `${userId}.git`;
 
   try {
     // Read the existing configuration file
     let gitConfig = await fs.readFile(gitConfigPath, 'utf8');
-  
+
     // Check if the user is already in the students group
     const studentsGroupPattern = /^@students\s*=\s*(.*)$/m;
     const match = gitConfig.match(studentsGroupPattern);
-    console.log(`match: ${match}`);
     let studentsList = match ? match[1].split(/\s+/) : [];
-    console.log(`studentsList: ${studentsList}`);
+    logger.info(`studentsList: ${studentsList}`);
 
     if (!studentsList.includes(userId)) {
       studentsList.push(userId);
@@ -80,7 +81,7 @@ async function createRepo (userId) {
     await execGit(['commit', '--allow-empty', '-m', `Add repository ${repoName} for ${userId}`], gitAdminDir);
     await execGit(['push'], gitAdminDir);
   } catch (e) {
-    console.error(`Failed to create repository for ${userId}: ${e}`);
+    logger.error(`Failed to create repository for ${userId}`, e);
     throw e;
   }
 }
@@ -130,11 +131,11 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
   const newSshKeys = newSshKey.trim().replace(/\n/g, '').split(' ').filter(s => s !== ' ');
   if (newSshKeys.length >= 2) {
     if (newSshKeys[0] !== 'ssh-rsa' &&
-        newSshKeys[0] !== 'ssh-ed25519' &&
-        newSshKeys[0] !== 'ecdsa-sha2-nistp256' &&
-        newSshKeys[0] !== 'ecdsa-sha2-nistp384' &&
-        newSshKeys[0] !== 'ecdsa-sha2-nistp521'
-       ) {
+      newSshKeys[0] !== 'ssh-ed25519' &&
+      newSshKeys[0] !== 'ecdsa-sha2-nistp256' &&
+      newSshKeys[0] !== 'ecdsa-sha2-nistp384' &&
+      newSshKeys[0] !== 'ecdsa-sha2-nistp521'
+    ) {
       return res.status(400).send('Unsupported SSH Key, only support "rsa", "ed25519", "ecdsa".');
     }
     if (!(/^AAAA[A-Za-z0-9/+]+[=]{0,3}$/i.test(newSshKeys[1]))) {
@@ -163,13 +164,19 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
           tmpPath + '.key',
           magicStr
         );
-        await gitCpWrap([tmpPath + '.key', path.join(gitRepoDir, userId + '.git', 'hooks', 'key')]);
+        if (await fs.exists(path.join(gitRepoDir, userId + '.git'))) {
+          await gitCpWrap([tmpPath + '.key', path.join(gitRepoDir, userId + '.git', 'hooks', 'key')]);
+          logger.info(`Copied key to ${path.join(gitRepoDir, userId + '.git', 'hooks', 'key')}`);
+        } else {
+          await gitCpWrap([tmpPath + '.key', path.join(gitHomeDir, "key_tmp", userId)]);
+          logger.info(`Copied key to ${path.join(gitRepoDir, "key_tmp", userId)}`);
+        }
         req.user.ssh_key = newSshKey;
         req.user.git_upload_key = magicStr;
         await req.user.save();
         fieldChanged.push('SSH key');
       } catch (e) {
-        console.error(`Failed to update SSH key for ${req.user.meta.id}: ${e}`);
+        logger.error(`Failed to update SSH key for ${req.user}`, e);
         return res.status(500).send('Something bad happened... New SSH Key may not be saved.');
       }
       // res.send(`SSH Key changed successfully.`);
