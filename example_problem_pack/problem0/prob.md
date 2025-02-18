@@ -1,5 +1,3 @@
-# DSA Problem 0
-
 ## Problem Description
 
 When you open this online judge website, you may notice something unusual — this Judge does not have an upload button!
@@ -28,7 +26,8 @@ Before proceeding, check if you already have an SSH Key by running the following
 
 ```sh
 $ ls ~/.ssh
-config  id_ed25519  id_ed25519.pub  id_rsa  id_rsa.pub  known_hosts  known_hosts.old
+config  id_ed25519  id_ed25519.pub  id_rsa  id_rsa.pub  known_hosts \
+  known_hosts.old
 ```
 
 If you see files such as `id_ed25519.pub` or `id_rsa.pub`, you already have an SSH key, and you can skip the key generation step.
@@ -63,7 +62,9 @@ Once generated, use the following command to print your SSH public key if the de
 
 ```sh
 $ cat ~/.ssh/id_ed25519.pub
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCLYUGx5P6gwckWhkb61xfmweiUl1TIUVW7Gn6jxaxn seantsao00@GA402RJ
+ssh-ed25519 \
+  AAAAC3NzaC1lZDI1NTE5AAAAIFCLYUGx5P6gwckWhkb61xfmweiUl1TIUVW7Gn6jxaxn \
+  seantsao00@GA402RJ
 ```
 
 The file storing your SSH public key may be different if you already have an existing SSH key.
@@ -74,7 +75,7 @@ The file storing your SSH public key may be different if you already have an exi
 
 Navigate to the top-right corner of the Judge interface and click the **Profile** button to enter your account settings.
 
-![image](https://hackmd.io/_uploads/HJ0NJug9Jx.png)
+<img src="https://hackmd.io/_uploads/HJ0NJug9Jx.png" width="100%">
 
 Paste your SSH public key, in the format of `id_xxx.pub`, into the `SSH Public Key` field. Enter your current Judge password in the `Current password` field at the bottom, then click `Send` to submit.
 
@@ -172,7 +173,7 @@ If you encounter any issues, and you've followed the instructions carefully, fee
 
 ### **Submission Rules**
 
-- Each user can submit each problem a maximum of **five times per day**. Unused attempts do not carry over.
+- Each user can submit each problem a maximum of **ten times per day**. Unused attempts do not carry over. Once you reach the limit for a problem, you can no longer push changes to remote until the next day. However, submissions to other problems will still be accepted when trying to push.
 - Only modifications to the **`main` branch** are considered. Changes to other branches will not be uploaded.
 
 ### **Repository-Specific Notes**
