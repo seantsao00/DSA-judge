@@ -59,7 +59,7 @@ const main = async () => {
       users.push(row);
     })
     .on('end', async () => {
-      console.log(users); // Check if data is correct 
+      console.log('Processing started...');
 
       await connectDatabase();
 
@@ -71,7 +71,7 @@ const main = async () => {
 
         if (!email) continue;
 
-        console.log(email, id, name, role);
+        console.log(`Processing ${email}, ${id}, ${name}, ${role}...`);
         await newUser(email, id, name, role, mailTransporter);
       }
 
@@ -125,13 +125,15 @@ DSA 2025 TAs
     text
   };
 
-  console.log(user);
+  console.log(`Sending email to ${email}...`);
   await new Promise((resolve, reject) => {
     transporter.sendMail(mailOptions, (err, result) => {
       if (err) return reject(err);
       resolve(result);
     });
   });
+
+  console.log(`Email sent to ${email}`);
 
   await user.save();
 
