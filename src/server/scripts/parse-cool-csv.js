@@ -19,7 +19,7 @@ const main = async () => {
   fs.createReadStream(source)
     .pipe(csvParser())
     .on('data', (row) => {
-      if (row['身份'] !== '學生') throw new Error('Only students are allowed');
+      if (row['身份'] !== '學生' && row['班別'] !== '資料結構與演算法 (CSIE1212-01)\n資料結構與演算法 (CSIE1212-01)') return;
 
       results.push({
         ID: row['學號'],
