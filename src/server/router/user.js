@@ -182,7 +182,7 @@ router.post('/changePassword', requireLogin, wrap(async (req, res) => {
       // res.send(`SSH Key changed successfully.`);
     }
   } else if (newSshKeys.length === 1) {
-    return res.status(400).send('Unsupported SSH Key or it is too short!');
+    return res.status(400).send('Unsupported SSH Key!');
   }
   let newName = req.body['new-name'];
   if (newName !== undefined) {

@@ -24,12 +24,12 @@ const formValidateObj = {
     'new-name': {
         identifier: 'new-name',
         rules: [
+            // {
+            //     type: 'alphanumeric',
+            //     prompt: `New name contains invalid characters.`,
+            // },
             {
-                type: 'alphanumeric',
-                prompt: `New name contains invalid characters.`,
-            },
-            {
-                type: 'maxLength[16]',
+                type: 'maxLength[128]',
                 prompt: `New name should not be longer than 16 characters.`,
             },
             {
